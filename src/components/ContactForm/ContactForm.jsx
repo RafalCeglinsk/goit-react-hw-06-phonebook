@@ -1,22 +1,41 @@
-import css from './ContactForm.module.css';
 import PropTypes from 'prop-types';
-export const ContactForm = ({
-  name,
-  number,
-  onChangeName,
-  onChangeNumber,
-  onSubmit,
-}) => {
+import { useDispatch, useSelector } from 'react-redux';
+
+import { addContact } from 'redux/contactSlice';
+import { getContacts } from 'redux/selectors';
+
+import css from './ContactForm.module.css';
+
+export const ContactForm = ({ onSubmit }) => {
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    const name = e.target.elements.name.value;
+    const number = e.target.elements.number.value;
+
+    if (!name || !number) {
+      alert('Name and number cannot be empty.');
+      return;
+    }
+
+    const newContact = { name, number };
+    onSubmit(newContact);
+    dispatch(addContact(newContact));
+
+    e.target.reset();
+  };
   return (
-    <form onSubmit={onSubmit} className={css.form}>
+    <form onSubmit={handleSubmit} className={css.form}>
       <label className={css.label}>
         <h2 className={css.title}>Name:</h2>
         <input
           type="text"
           name="name"
-          value={name}
+          value={contacts.name}
           className={css.input}
-          onChange={onChangeName}
+          onChange={addContact}
           pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
           title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
           required
@@ -25,9 +44,9 @@ export const ContactForm = ({
         <input
           type="tel"
           name="number"
-          value={number}
+          value={contacts.number}
           className={css.input}
-          onChange={onChangeNumber}
+          onChange={addContact}
           pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
           title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
           required
@@ -41,9 +60,5 @@ export const ContactForm = ({
 };
 
 ContactForm.propTypes = {
-  name: PropTypes.string.isRequired,
-  number: PropTypes.string.isRequired,
-  onChangeName: PropTypes.func.isRequired,
-  onChangeNumber: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
 };
